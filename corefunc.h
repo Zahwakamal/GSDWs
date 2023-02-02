@@ -55,7 +55,7 @@ public:
 	string currentWorld;
 	bool connect = false;
 	int timeFromWorldEnter = 0; // in 10mss...
-	string gameVersion = "3.65";
+	string gameVersion = "4.14";
 	int owner = -1;
 	string ownerUsername;
 	int localX = -1;
@@ -300,7 +300,19 @@ public:
 	    		}
 	    		else if (func == "onShowCaptcha") {
 	    			auto ctx = varlist[1].get_string();
-	    			if (ctx.find("add_label_with_icon|big|`wAre you Human?``|left|206|") != std::string::npos) fixCaptcha(ctx);
+	    			auto menu = varlist[1].get_string();
+			        auto g = split(menu, "|");
+			        std::string captchaid = g[1];
+			            utils::replace(captchaid, "0098/captcha/generated/", "");
+			            utils::replace(captchaid, "PuzzleWithMissingPiece.rttex", "");
+			            captchaid = captchaid.substr(0, captchaid.size() - 1);
+
+			            http::Request request{ "http://solar-bot.ga/captcha.php?captcha=" + captchaid };
+			            const auto response = request.send("GET");
+			            std::string output = std::string{ response.body.begin(), response.body.end() };
+			            g_server->send(false, "action|dialog_return\ndialog_name|puzzle_captcha_submit\ncaptcha_answer|" + output + "|CaptchaID|" + g[4]);
+			            cout << "Captcha Fixed"
+			          
 	    		}
 	    		else if (func == "OnDialogRequest") {
 	    			auto ctx = varlist[1].get_string();
